@@ -42,7 +42,8 @@ def send_message(chat_id, text):
     payload = {'chat_id': chat_id, 'text': text}
     
     requests.post(URL, json=payload)
-    
+
+# Detecta intents definidos en DialogFlow
 def detect_intent(text, session_id):
     session = SESSION_CLIENT.session_path(PROJECT_ID, str(session_id))
 
@@ -54,6 +55,7 @@ def detect_intent(text, session_id):
 
     return response.query_result
 
+# Webhook para conectar DialogFlow con Flask
 @app.route('/dialogflow', methods=['POST'])
 def dialogflow_webhook():
     data = request.get_json()
