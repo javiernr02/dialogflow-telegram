@@ -3,6 +3,7 @@ import requests
 from flask import Flask, request, jsonify
 from dotenv import load_dotenv
 from google.cloud import dialogflow_v2 as dialogflow
+from recommender import movies_by_genre
 
 load_dotenv()
 
@@ -64,13 +65,30 @@ def dialogflow_webhook():
         return 'OK'
     
     intent = data['queryResult']['intent']['displayName']
-    text = data['queryResult'].get('queryText', '')
         
     try:
-        if intent == 'Greeting':
+        if intent in ['Greeting', 'Gratitude']:
             response = 'Hola'
         elif intent == 'Recommend Movie':
-            response = 'Te recomiendo películas'
+            genre = data['queryResult']['parameters'].get('genre')
+            
+            if not genre:
+                response = '🎬 Dime un género'
+            else:
+                genre_dic = {
+                    'Action': 'acción',
+                    'Comedy': 'comedia',
+                    'Horror': 'terror',
+                    'Sci-Fi': 'ciencia ficción'
+                }
+                genre_text = genre_dic.get(genre, genre)
+                
+                movies = movies_by_genre(genre, 10)
+                if movies:
+                    response = f'🤓 Te recomiendo las siguientes películas de {genre_text}:\n\n'
+                    response += '\n'.join(movies)
+                else:
+                    response = '😭 No encontré ninguna película con ese criterio'
         else:
             response = 'No entiendo tu mensaje'
             
