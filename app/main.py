@@ -3,7 +3,7 @@ import requests
 from flask import Flask, request, jsonify
 from dotenv import load_dotenv
 from google.cloud import dialogflow_v2 as dialogflow
-from recommender import movies_by_genre, movies_by_genre_and_year, movies_by_year, movie_info_by_title
+from recommender import movies_by_genre, movies_by_genre_and_year, movies_by_year, movie_info_by_title, is_movie_popular
 
 load_dotenv()
 
@@ -184,7 +184,7 @@ def dialogflow_webhook():
             
             if information:
                 
-                if 'valoracion' in text or 'valora' in text or 'nota' in text:
+                if 'valoracion' in text:
                     if rating:
                         response = f'{title} tiene una valoración media de {rating}/5'
                     else:
@@ -202,6 +202,16 @@ def dialogflow_webhook():
                         response += f'\nMedia de valoraciones: {rating}/5'
                     else:
                         response += '\nSin valoraciones'
+            else:
+                response = '😭 No encontré esa película'
+        
+        elif intent == 'Movie Popularity':
+            title = data['queryResult']['parameters'].get('any')
+            
+            result = is_movie_popular(title)
+            
+            if result:
+                response = f'{title} es una película {result}'
             else:
                 response = '😭 No encontré esa película'
              
